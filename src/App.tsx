@@ -4,15 +4,22 @@ import Home from './routes/home';
 import Profile from './routes/profile';
 import Login from './routes/login';
 import CreateAccount from './routes/create-account';
-import { createGlobalStyle } from 'styled-components';
+import styled, { createGlobalStyle } from 'styled-components';
 import reset from 'styled-reset';
 import { useEffect, useState } from 'react';
 import LoadingScreen from './components/loading-screen';
+import { auth } from './firebase';
+import ProtectedRoute from './components/protected-route';
+import PasswordReset from './routes/password-reset';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Layout />,
+    element: (
+      <ProtectedRoute>
+        <Layout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         path: '',
@@ -31,6 +38,10 @@ const router = createBrowserRouter([
   {
     path: '/create-account',
     element: <CreateAccount />,
+  },
+  {
+    path: '/password-reset',
+    element: <PasswordReset />,
   },
 ]);
 
@@ -52,6 +63,8 @@ function App() {
   const [isLoading, setLoading] = useState(true);
   const init = async () => {
     // 파이어베이스가 준비될 떄까지 기다림
+    await auth.authStateReady();
+
     setLoading(false);
   };
 
@@ -60,11 +73,17 @@ function App() {
   }, []);
 
   return (
-    <>
+    <Wrapper>
       <GlobalStyles />
       {isLoading ? <LoadingScreen /> : <RouterProvider router={router} />}
-    </>
+    </Wrapper>
   );
 }
+
+const Wrapper = styled.div`
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+`;
 
 export default App;
